@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import dearpygui.dearpygui as dpg
+import matplotlib.pyplot as plt
 
 from modules.grav_anomaly.anomaly import Anomaly
 
@@ -10,21 +11,57 @@ def gravityAnomalyWindow():
         print("Listing anomalies")
 
 
-        
+        # Table with added anomalies
         with dpg.tree_node(label = "Anomalies"):
             anomalies = getAnomalies()
+            
+            # Create table
+            with dpg.table(tag="anomaly_table", header_row=True, borders_innerH=True, borders_outerH=True, borders_innerV=True, borders_outerV=True, resizable=True):
+                dpg.add_table_column(label = "Index")
+                dpg.add_table_column(label = "x-position")
+                dpg.add_table_column(label = "Dimensions [x,y,z]")
+                dpg.add_table_column(label = "Density diff.")
+                dpg.add_table_column(label = "Depth")
+
+                for i in range(len(anomalies)):
+                    values = [i+1, anomalies[i].x_pos,anomalies[i].dim,anomalies[i].drho,anomalies[i].depth]
+                    with dpg.table_row(tag=f"row{i}"):
+                        for j in range(len(values)):
+                            dpg.add_text(values[j])
+        
+        # Add anomalies
+        with dpg.tree_node(label = "Add anomalies"):
+
+            dpg.add_input_float(label="x position", default_value=0, tag="x_pos")
+            
+            dpg.add_text("Dimensions")
+            with dpg.group(horizontal=True):
+                dpg.add_input_float(label="x", default_value=100, tag = "x_dim", width=100)
+                dpg.add_input_float(label="y", default_value=100, tag = "y_dim", width=100)
+                dpg.add_input_float(label="z", default_value=100, tag = "z_dim", width=100)
+
+            dpg.add_input_float(label = "Density diff.", default_value= 500, tag = "drho")
+            dpg.add_input_float(label = "Depth", default_value=1000, tag = "depth")
+
+            dpg.add_spacer(height=5)
+            dpg.add_button(label = "Add", callback=addAnomaly)
+        
+        # Remove anomalies
+        with dpg.tree_node(label = "Remove anomalies"):
+            dropdown_values = [f"Anomaly {i+1}" for i in range(len(getAnomalies()))]
+            dpg.add_combo(dropdown_values, label = "Select anomaly", width=200, tag="anomaly_to_remove")
+            
+            dpg.add_spacer(height=5)
+            dpg.add_button(label = "Remove", callback=removeAnomaly)
 
 
         dpg.add_spacer(height=5)
         with dpg.group(horizontal=True):
-            dpg.add_input_float(label = "x-min", tag = "x_min", width = 100)
-            dpg.add_input_float(label = "x-max", tag = "x_max", width = 100)
+            dpg.add_input_float(label = "x-min", tag = "x_min", width = 125, default_value=-20000)
+            dpg.add_input_float(label = "x-max", tag = "x_max", width = 125, default_value=20000)
 
         dpg.add_button(label = "Simulate",callback=updatePlot)
 
-# TODO
-# Create add/remove system
-# Create plot function
 
 def getAnomalies():
     '''
@@ -43,13 +80,94 @@ def getAnomalies():
             drho = float(parsed[i]["drho"])
             depth = float(parsed[i]["depth"])
             anomalies[i] = Anomaly(x_pos, dim, drho, depth)
-    print(anomalies)
+    
     return anomalies
 
-def addAnomaly(info):
+def addAnomaly():
+    anomaly_to_add = {
+        "x_pos": dpg.get_value("x_pos"),
+        "dim": [dpg.get_value("x_dim"),dpg.get_value("y_dim"),dpg.get_value("z_dim")],
+        "drho": dpg.get_value("drho"),
+        "depth": dpg.get_value("depth")
+    }
+
     print("Adding anomaly")
 
+    with open("modules/grav_anomaly/anomalies.json", "r+") as anomaly_file:
+        parsed = json.load(anomaly_file)
+        parsed.append(anomaly_to_add)
+
+        anomaly_file.seek(0)
+        json.dump(parsed, anomaly_file, indent = 4)
+        anomaly_file.close()
+    
+    updateCurrentAnomalies()
+
+
+
+def removeAnomaly():
+    anomaly_index = int(dpg.get_value("anomaly_to_remove")[-1])-1
+    with open("modules/grav_anomaly/anomalies.json", "r+") as anomaly_file:
+        parsed = json.load(anomaly_file)
+        print(parsed[anomaly_index])
+        try:
+            del parsed[anomaly_index]
+            
+            anomaly_file.seek(0)
+            json.dump(parsed, anomaly_file, indent = 4)
+            anomaly_file.truncate()
+            anomaly_file.close()
+            
+            print(f"Anomaly {anomaly_index+1} was removed!")
+        except:
+            print(f"Anomaly{anomaly_index+1} was not found...")
+    
+    updateCurrentAnomalies()
+
+
+def updateCurrentAnomalies():
+    # Update anomalies in dropdown and in table
+
+    anomalies = getAnomalies()
+    number_of_anomalies = len(anomalies)
+
+    new_dropdown_values = [f"Anomaly {i+1}" for i in range(number_of_anomalies)]
+    dpg.configure_item("anomaly_to_remove", items = new_dropdown_values)
+
+    # Clear anomalies
+    rows_to_clear = True
+    i = 0
+    while rows_to_clear:
+        try:
+            dpg.delete_item(f"row{i}")
+            i += 1
+        except:
+            rows_to_clear = False
+
+    # Now add the current anomalies
+    for i in range(number_of_anomalies):
+        values = [i+1, anomalies[i].x_pos,anomalies[i].dim,anomalies[i].drho,anomalies[i].depth]
+        with dpg.table_row(parent="anomaly_table", tag=f"row{i}"):
+            for j in range(len(values)):
+                dpg.add_text(values[j])
+
+    print("Updating table")
+
+
 def updatePlot():
-    x_coords = np.linspace(dpg.get_value("x_min"), dpg.get_value("x_max"))
+    x_min, x_max = dpg.get_value("x_min"), dpg.get_value("x_max")
+    x_coords = np.linspace(x_min, x_max, 200)
+
+    anomalies = getAnomalies()
+    n_anomalies = len(anomalies)
+    y_vals = np.zeros_like([x_coords]*n_anomalies)
+    # print(np.shape(y_vals))
+    for i in range(n_anomalies):
+        y_vals[i] = anomalies[i].computeAnomaly(x_coords=x_coords)
+     
+    plt.plot(x_coords,y_vals[0])
+    plt.show()
+
+
     print("Updating plot")
 

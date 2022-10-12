@@ -17,7 +17,7 @@ def gravityAnomalyWindow():
             
             # Create table
             with dpg.table(tag="anomaly_table", header_row=True, borders_innerH=True, borders_outerH=True, borders_innerV=True, borders_outerV=True, resizable=True):
-                dpg.add_table_column(label = "Index")
+                dpg.add_table_column(label = "Anomaly")
                 dpg.add_table_column(label = "x-position")
                 dpg.add_table_column(label = "Dimensions [x,y,z]")
                 dpg.add_table_column(label = "Density diff.")
@@ -67,7 +67,7 @@ def getAnomalies():
     '''
     Returns a list of anomaly objects
     '''
-    print("Getting anomalies")
+    print("Getting anomalies...")
     with open("modules/grav_anomaly/anomalies.json", "r") as anomaly_file:
         parsed = json.load(anomaly_file)
         n_anomalies = len(parsed)
@@ -84,14 +84,14 @@ def getAnomalies():
     return anomalies
 
 def addAnomaly():
+    print("Adding anomaly...")
+
     anomaly_to_add = {
         "x_pos": dpg.get_value("x_pos"),
         "dim": [dpg.get_value("x_dim"),dpg.get_value("y_dim"),dpg.get_value("z_dim")],
         "drho": dpg.get_value("drho"),
         "depth": dpg.get_value("depth")
     }
-
-    print("Adding anomaly")
 
     with open("modules/grav_anomaly/anomalies.json", "r+") as anomaly_file:
         parsed = json.load(anomaly_file)
@@ -109,7 +109,7 @@ def removeAnomaly():
     anomaly_index = int(dpg.get_value("anomaly_to_remove")[-1])-1
     with open("modules/grav_anomaly/anomalies.json", "r+") as anomaly_file:
         parsed = json.load(anomaly_file)
-        print(parsed[anomaly_index])
+        # Try to delete anomaly
         try:
             del parsed[anomaly_index]
             
@@ -127,6 +127,7 @@ def removeAnomaly():
 
 def updateCurrentAnomalies():
     # Update anomalies in dropdown and in table
+    print("Updating anomalies...")
 
     anomalies = getAnomalies()
     number_of_anomalies = len(anomalies)
@@ -151,12 +152,13 @@ def updateCurrentAnomalies():
             for j in range(len(values)):
                 dpg.add_text(values[j])
 
-    print("Updating table")
 
 
 def updatePlot():
+    print("Generatin plot...")
+
     x_min, x_max = dpg.get_value("x_min"), dpg.get_value("x_max")
-    x_coords = np.linspace(x_min, x_max, 200)
+    x_coords = np.linspace(x_min, x_max, 100)
 
     anomalies = getAnomalies()
     n_anomalies = len(anomalies)
@@ -164,10 +166,37 @@ def updatePlot():
     # print(np.shape(y_vals))
     for i in range(n_anomalies):
         y_vals[i] = anomalies[i].computeAnomaly(x_coords=x_coords)
-     
-    plt.plot(x_coords,y_vals[0])
-    plt.show()
+    
+    # Try to update initial plot
+    # If not already created then create new
+    try:
+        data_series_to_clear = True
+        i = 0
+        while data_series_to_clear:
+            try:
+                dpg.delete_item(f"Anomaly {i+1} series")
+                i += 1
+            except:
+                data_series_to_clear = False
+        dpg.delete_item("Sum series")
+        for i in range(n_anomalies):
+            dpg.add_line_series(x_coords, y_vals[i], label=f"Anomaly {i+1}", tag = f"Anomaly {i+1} series", parent="y_axis")
+        
+        # Add sum
+        if n_anomalies > 1:
+            dpg.add_line_series(x_coords, np.sum(y_vals,0), label="Sum", tag = "Sum series", parent="y_axis")
+    except:
+        with dpg.window(label = "Simulation", tag = "anomaly_plot_window", width=500, height=500,on_close=dpg.delete_item):
+            dpg.add_text("To show legend - Right click chart and enable legend")
+            with dpg.plot(label = "Gravity anomaly", width = -1, height = -1, tag = "anomaly_plot"):
+                dpg.add_plot_legend()
+                dpg.add_plot_axis(dpg.mvXAxis, label="x")
+                dpg.add_plot_axis(dpg.mvYAxis, label="Gravity anomaly [mGal]", tag="y_axis")
 
-
-    print("Updating plot")
+                for i in range(n_anomalies):
+                    dpg.add_line_series(x_coords, y_vals[i], label=f"Anomaly {i+1}", tag = f"Anomaly {i+1} series", parent="y_axis")
+                
+                # Add sum
+                if n_anomalies > 1:
+                    dpg.add_line_series(x_coords, np.sum(y_vals,0), label="Sum", tag = "Sum series", parent="y_axis")
 

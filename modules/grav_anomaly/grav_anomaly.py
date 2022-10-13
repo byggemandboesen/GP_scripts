@@ -83,6 +83,7 @@ def getAnomalies():
     
     return anomalies
 
+
 def addAnomaly():
     print("Adding anomaly...")
 
@@ -102,7 +103,6 @@ def addAnomaly():
         anomaly_file.close()
     
     updateCurrentAnomalies()
-
 
 
 def removeAnomaly():
@@ -155,7 +155,7 @@ def updateCurrentAnomalies():
 
 
 def updatePlot():
-    print("Generatin plot...")
+    print("Generating plot...")
 
     x_min, x_max = dpg.get_value("x_min"), dpg.get_value("x_max")
     x_coords = np.linspace(x_min, x_max, 100)

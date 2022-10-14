@@ -1,4 +1,4 @@
-import json
+import json, os
 import numpy as np
 import dearpygui.dearpygui as dpg
 import matplotlib.pyplot as plt
@@ -153,7 +153,6 @@ def updateCurrentAnomalies():
                 dpg.add_text(values[j])
 
 
-
 def updatePlot():
     print("Generating plot...")
 
@@ -163,7 +162,7 @@ def updatePlot():
     anomalies = getAnomalies()
     n_anomalies = len(anomalies)
     y_vals = np.zeros_like([x_coords]*n_anomalies)
-    # print(np.shape(y_vals))
+    
     for i in range(n_anomalies):
         y_vals[i] = anomalies[i].computeAnomaly(x_coords=x_coords)
     
@@ -188,7 +187,7 @@ def updatePlot():
     except:
         with dpg.window(label = "Simulation", tag = "anomaly_plot_window", width=500, height=500,on_close=dpg.delete_item):
             dpg.add_text("To show legend - Right click chart and enable legend")
-            with dpg.plot(label = "Gravity anomaly", width = -1, height = -1, tag = "anomaly_plot"):
+            with dpg.plot(label = "Gravity anomaly", width = -1, height = -25, tag = "anomaly_plot"):
                 dpg.add_plot_legend()
                 dpg.add_plot_axis(dpg.mvXAxis, label="x")
                 dpg.add_plot_axis(dpg.mvYAxis, label="Gravity anomaly [mGal]", tag="y_axis")
@@ -199,4 +198,39 @@ def updatePlot():
                 # Add sum
                 if n_anomalies > 1:
                     dpg.add_line_series(x_coords, np.sum(y_vals,0), label="Sum", tag = "Sum series", parent="y_axis")
+            
+            # Save data
+            dpg.add_button(label = "Save figure/anomalies", callback=saveData)
 
+
+def saveData():
+    print("Saving data...")
+
+    anomalies = getAnomalies()
+    n_anomalies = len(anomalies)
+    x_coords = dpg.get_value("Anomaly 1 series")[0]
+    y_vals = np.zeros_like([x_coords]*n_anomalies)
+    
+    # Generate y values and add to plot
+    for i in range(n_anomalies):
+        y_vals[i] = anomalies[i].computeAnomaly(x_coords=x_coords)
+        plt.plot(x_coords,y_vals[i], label= f"Anomaly {i+1}")
+    
+    plt.xlim((x_coords[0],x_coords[-1]))
+    plt.title(f"Gravity anomaly")
+    plt.xlabel(r"Distance [$m$]")
+    plt.ylabel(r"Gravity anomaly [$mGal$]")
+    plt.tight_layout()
+    plt.legend()
+    plt.savefig(f"modules/grav_anomaly/Anomaly.jpg", dpi=150)
+    
+    # Add sum to plot, if there are more than one anomaly
+    if n_anomalies > 1:
+        plt.plot(x_coords,np.sum(y_vals,0), label = "Sum")
+        plt.legend()
+        plt.savefig(f"modules/grav_anomaly/Anomaly_sum.jpg", dpi=150)
+    
+    # TODO
+    # Copy json file
+
+    print("Finished saving...")

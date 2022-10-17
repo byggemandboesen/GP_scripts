@@ -1,15 +1,14 @@
 import numpy as np
 
 def gravprism(drho,dx1,dx2,dy1,dy2,dz1,dz2):
-    #
-    # gravitational attraction due to "m" prisms at "n" observation point
-    # x1,x2,y1,y2,z1,z2 are coordinates of edges of prisms relative to 
-    # observation points  They are m x n matrices
-    # PS. Do not ever get me to do this again.....
-    #---------------------------------------------------------------------
+    '''
+    gravitational attraction due to "m" prisms at "n" observation point
+    x1,x2,y1,y2,z1,z2 are coordinates of edges of prisms relative to 
+    observation points  They are m x n matrices
+    PS. Do not ever get me to do this again.....
+    '''
 
-    gam=(6.6732*10**(-11))*1e5             # mGal m^2/kg
-    
+    gam=(6.6732*10**(-11))*1e5             # mGal m^2/kg    
     num_points = len(dx1)
     
     d111 = np.column_stack((dx1, [dy1,]*num_points, [dz1,]*num_points))
@@ -40,7 +39,6 @@ def gravprism(drho,dx1,dx2,dy1,dy2,dz1,dz2):
     g221=np.multiply(-1, np.subtract(np.subtract(np.multiply(dz2, np.arctan(np.divide(np.multiply(dx1, dy2), np.multiply(dz2, R221)))), np.multiply(dx1, np.log(np.add(R221, dy2)))), np.multiply(dy2, np.log(np.add(R221, dx1)))))
     g222=np.subtract(np.subtract(np.multiply(dz2, np.arctan(np.divide(np.multiply(dx2, dy2), np.multiply(dz2, R222)))), np.multiply(dx2, np.log(np.add(R222, dy2)))), np.multiply(dy2, np.log(np.add(R222, dx2))))
 
-    # print(np.sum([g111,g112,g121,g122,g211,g212,g221,g222],0))
     dg = np.multiply(drho*gam,np.sum([g111,g112,g121,g122,g211,g212,g221,g222],0))
 
     return dg

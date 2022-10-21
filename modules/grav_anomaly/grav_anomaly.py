@@ -59,6 +59,7 @@ def gravityAnomalyWindow():
         with dpg.group(horizontal=True):
             dpg.add_input_float(label = "x-min", tag = "x_min", width = 125, default_value=-20000)
             dpg.add_input_float(label = "x-max", tag = "x_max", width = 125, default_value=20000)
+        dpg.add_input_int(label = "Points", default_value = 100, tag = "num_points", width = 125)
 
         dpg.add_button(label = "Simulate",callback=updatePlot)
 
@@ -157,7 +158,8 @@ def updatePlot():
     print("Generating plot...")
 
     x_min, x_max = dpg.get_value("x_min"), dpg.get_value("x_max")
-    x_coords = np.linspace(x_min, x_max, 100)
+    num_points = dpg.get_value("num_points")
+    x_coords = np.linspace(x_min, x_max, num_points)
 
     anomalies = getAnomalies()
     n_anomalies = len(anomalies)

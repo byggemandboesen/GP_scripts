@@ -10,7 +10,7 @@ def run_ui():
     dpg.create_context()
     dpg.create_viewport(title='Geo and planetary physics 1 - Victor Boesen', width=1000, height=750)
     
-    with dpg.window(label = "Modules", width = 500, height = 400, no_close=True):
+    with dpg.window(label = "Modules", width = 500, height = 400, pos=[10,10], no_close=True):
         grav_anomaly.gravityAnomalyWindow()
 
     dpg.setup_dearpygui()

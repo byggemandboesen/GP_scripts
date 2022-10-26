@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from modules.grav_anomaly.anomaly import Anomaly
 
-def gravityAnomalyWindow():
+def gravityAnomalyModule():
     with dpg.collapsing_header(label = "Gravity anomalies"):
         dpg.add_text("Add, remove or simulate anomalies")
         print("Listing anomalies")

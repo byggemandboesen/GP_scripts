@@ -5,6 +5,7 @@ import dearpygui.dearpygui as dpg
 # sys.path.append("modules/")
 from modules.grav_anomaly import grav_anomaly
 from modules.b_field_rms import b_field_rms
+from modules.spherical_harmonic_model import spherical_harmonic
 
 # Run user intereface
 def run_ui():
@@ -14,6 +15,7 @@ def run_ui():
     with dpg.window(label = "Modules", width = 500, height = 400, pos=[10,10], no_close=True):
         grav_anomaly.gravityAnomalyModule()
         b_field_rms.bFieldRMSModule()
+        spherical_harmonic.sphericalHarmonicModule()
 
     dpg.setup_dearpygui()
     dpg.show_viewport()

@@ -11,7 +11,7 @@ def bFieldRMSModule():
         n_degrees = [int(df["deg"].iloc[0]),int(df["deg"].iloc[-1])]
         years = [df.columns[i] for i in range(3,len(df.columns))]
 
-        dpg.add_slider_int(label = "Degree", min_value=n_degrees[0], max_value=n_degrees[1], default_value = 1, tag = "degree", callback = updateRMS)
+        dpg.add_slider_int(label = "Degree", min_value=n_degrees[0], max_value=n_degrees[1], default_value = 1, tag = "b_rms_degree", callback = updateRMS)
         dpg.add_combo(years, label = "Year", default_value = years[-1], tag = "year", callback = updateRMS)
         # Year defults to most recent data
 
@@ -29,7 +29,7 @@ def updateRMS():
     '''
     df = loadFile()
 
-    degree = dpg.get_value("degree")
+    degree = dpg.get_value("b_rms_degree")
     year = dpg.get_value("year")
 
     rms = 0

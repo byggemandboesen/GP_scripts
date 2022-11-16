@@ -1,6 +1,9 @@
 # GP_scripts
 A collection of scripts for Geo- and planetary physics 1
 
+![Example image](Example.png)
+Above is an example of some of the features included in the software.
+
 ## Installation
 As usual, clone the software to your machine. Here's the procedure with github SSH keys.
 ```bash
@@ -33,3 +36,10 @@ Simply run the software like usual
 ```bash
 python3 main.py
 ```
+
+### TODO
+* Fix spherical harmonic model simulation for varrying degree
+* Maybe fix Dearpygui issues
+
+### Notes
+Please use the exact version of Dearpygui as earlier versions have issues with setting axis ticks while later versions brake some other stuff... I will maybe look into this at some point. <br>

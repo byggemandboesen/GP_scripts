@@ -190,16 +190,16 @@ def updatePlot():
         with dpg.window(label = "Simulation", tag = "anomaly_plot_window", width=500, height=500,on_close=dpg.delete_item):
             dpg.add_text("To show legend - Right click chart and enable legend")
             with dpg.plot(label = "Gravity anomaly", width = -1, height = -25, tag = "anomaly_plot"):
-                dpg.add_plot_legend()
+                # dpg.add_plot_legend()
                 dpg.add_plot_axis(dpg.mvXAxis, label="x")
-                dpg.add_plot_axis(dpg.mvYAxis, label="Gravity anomaly [mGal]", tag="y_axis")
+                dpg.add_plot_axis(dpg.mvYAxis, label="Gravity anomaly [mGal]", tag="y_axis_grav_anomaly")
 
                 for i in range(n_anomalies):
-                    dpg.add_line_series(x_coords, y_vals[i], label=f"Anomaly {i+1}", tag = f"Anomaly {i+1} series", parent="y_axis")
+                    dpg.add_line_series(x_coords, y_vals[i], label=f"Anomaly {i+1}", tag = f"Anomaly {i+1} series", parent="y_axis_grav_anomaly")
                 
                 # Add sum
                 if n_anomalies > 1:
-                    dpg.add_line_series(x_coords, np.sum(y_vals,0), label="Sum", tag = "Sum series", parent="y_axis")
+                    dpg.add_line_series(x_coords, np.sum(y_vals,0), label="Sum", tag = "Sum series", parent="y_axis_grav_anomaly")
             
             # Save data
             dpg.add_button(label = "Save figure/anomalies", callback=saveData)

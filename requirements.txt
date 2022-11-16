@@ -1,5 +1,5 @@
 numpy
 scipy
 pandas
-dearpygui
+dearpygui==1.7.2 # set_axis_ticks not working with earlier versions, anomaly plot not working with newest
 matplotlib

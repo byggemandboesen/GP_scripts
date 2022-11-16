@@ -1,11 +1,13 @@
 import sys
 import dearpygui.dearpygui as dpg
+sys.dont_write_bytecode = True
 
+from modules.b_field_rms import b_field_rms
 # Import modules
 # sys.path.append("modules/")
 from modules.grav_anomaly import grav_anomaly
-from modules.b_field_rms import b_field_rms
 from modules.spherical_harmonic_model import spherical_harmonic
+
 
 # Run user intereface
 def run_ui():
